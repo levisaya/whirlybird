@@ -9,4 +9,4 @@ class SocketTransport(object):
         self.sock.connect((address, port))
 
     def emit(self, buffer):
-        self.sock.sendall(buffer + str.encode('\n'))
+        self.sock.sendall(bytes([len(buffer)]) + buffer)

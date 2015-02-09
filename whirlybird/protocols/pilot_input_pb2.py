@@ -13,7 +13,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='pilot_input.proto',
   package='whirlybird_protocols',
-  serialized_pb='\n\x11pilot_input.proto\x12\x14whirlybird_protocols\"x\n\nPilotInput\x12\x14\n\x0cleft_stick_x\x18\x01 \x02(\x01\x12\x14\n\x0cleft_stick_y\x18\x02 \x02(\x01\x12\x15\n\rright_stick_y\x18\x03 \x02(\x01\x12\x15\n\rright_stick_x\x18\x04 \x02(\x01\x12\x10\n\x08triggers\x18\x05 \x02(\x01')
+  serialized_pb='\n\x11pilot_input.proto\x12\x14whirlybird_protocols\"x\n\nPilotInput\x12\x14\n\x0cleft_stick_x\x18\x01 \x02(\r\x12\x14\n\x0cleft_stick_y\x18\x02 \x02(\r\x12\x15\n\rright_stick_y\x18\x03 \x02(\r\x12\x15\n\rright_stick_x\x18\x04 \x02(\r\x12\x10\n\x08triggers\x18\x05 \x02(\r')
 
 
 
@@ -27,35 +27,35 @@ _PILOTINPUT = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='left_stick_x', full_name='whirlybird_protocols.PilotInput.left_stick_x', index=0,
-      number=1, type=1, cpp_type=5, label=2,
+      number=1, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='left_stick_y', full_name='whirlybird_protocols.PilotInput.left_stick_y', index=1,
-      number=2, type=1, cpp_type=5, label=2,
+      number=2, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='right_stick_y', full_name='whirlybird_protocols.PilotInput.right_stick_y', index=2,
-      number=3, type=1, cpp_type=5, label=2,
+      number=3, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='right_stick_x', full_name='whirlybird_protocols.PilotInput.right_stick_x', index=3,
-      number=4, type=1, cpp_type=5, label=2,
+      number=4, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='triggers', full_name='whirlybird_protocols.PilotInput.triggers', index=4,
-      number=5, type=1, cpp_type=5, label=2,
+      number=5, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
