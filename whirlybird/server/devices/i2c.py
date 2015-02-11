@@ -23,3 +23,10 @@ class I2c(object):
         self.read_list = partial(self.bus.read_i2c_block_data, *[address])
         self.read_byte = partial(self.bus.read_byte_data, *[address])
         self.read_short = partial(self.bus.read_word_data, *[address])
+
+        connected_ok, error = self._check_connected_device()
+        if not connected_ok:
+            raise Exception('Failed to connect to device at {}: {}'.format(address, error))
+
+    def _check_connected_device(self):
+        raise NotImplementedError('_check_connected_device must be implemented by the derived class.')

@@ -3,6 +3,8 @@
 from .i2c import I2c
 from enum import Enum
 
+Lsm303MagnetometerAddress = 0x1E
+
 
 class Lsm303MagnetometerRegisters(Enum):
     Magnetometer_gain = 0x01
@@ -22,10 +24,14 @@ class MagnetometerGain(Enum):
 
 class Lsm303Magnetometer(I2c):
     def __init__(self):
-        I2c.__init__(self, 0b11110)
+        I2c.__init__(self, Lsm303MagnetometerAddress)
 
         # Enable magnetometer.
         self.write_8(Lsm303MagnetometerRegisters.Magnetometer_enable.value, 0x00)
+
+    def _check_connected_device(self):
+        # No WHOAMI register, can't check.
+        return True, ''
 
     def read(self):
         to_return = {}

@@ -3,6 +3,8 @@
 from .i2c import I2c
 from enum import Enum
 
+Lsm303AccelerometerAddress = 0x19
+
 
 class Lsm303AccelerometerRegisters(Enum):
     Control_1 = 0x20
@@ -12,15 +14,19 @@ class Lsm303AccelerometerRegisters(Enum):
 
 class Lsm303Accelerometer(I2c):
     def __init__(self, enable_high_res=False):
-        I2c.__init__(self, 0b11001)
+        I2c.__init__(self, Lsm303AccelerometerAddress)
 
         # Enable and set accelerometer resolution.
-        self.write_8(Lsm303AccelerometerRegisters.Control_1.value, 0x27)
+        self.write_8(Lsm303AccelerometerRegisters.Control_1.value, 0x57)
 
         if enable_high_res:
             self.write_8(Lsm303AccelerometerRegisters.Control_4.value, 0b00001000)
         else:
             self.write_8(Lsm303AccelerometerRegisters.Control_4.value, 0)
+
+    def _check_connected_device(self):
+        # No WHOAMI register, can't check.
+        return True, ''
 
     def read(self):
         to_return = {}
