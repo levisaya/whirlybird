@@ -3,10 +3,11 @@
 __author__ = 'Andy'
 
 import smbus
+from functools import partial
 
 
 class I2c(object):
-    def __init__(self):
+    def __init__(self, address):
         i2c_bus = 1
         with open('/proc/cpuinfo', 'r') as cpuinfo:
             for line in cpuinfo:
@@ -15,10 +16,10 @@ class I2c(object):
                     break
         self.bus = smbus.SMBus(i2c_bus)
 
-        self.write_8 = self.bus.write_byte_data
-        self.write_16 = self.bus.write_word_data
-        self.write_byte = self.bus.write_byte
-        self.write_list = self.bus.write_i2c_block_data
-        self.read_list = self.bus.read_i2c_block_data
-        self.read_byte = self.bus.read_byte_data
-        self.read_short = self.bus.read_word_data
+        self.write_8 = partial(self.bus.write_byte_data, *[address])
+        self.write_16 = partial(self.bus.write_word_data, *[address])
+        self.write_byte = partial(self.bus.write_byte, *[address])
+        self.write_list = partial(self.bus.write_i2c_block_data, *[address])
+        self.read_list = partial(self.bus.read_i2c_block_data, *[address])
+        self.read_byte = partial(self.bus.read_byte_data, *[address])
+        self.read_short = partial(self.bus.read_word_data, *[address])
