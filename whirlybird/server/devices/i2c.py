@@ -28,5 +28,17 @@ class I2c(object):
         if not connected_ok:
             raise Exception('Failed to connect to device at {}: {}'.format(address, error))
 
+    def read_16(self, reg):
+        bytes = self.read_list(reg, 2)
+        return (bytes[0] << 8) | bytes[1]
+
+    def read_s16(self, reg):
+        val = self.read_16(reg)
+
+        if val > 32767:
+            val -= 65536
+        return val
+
+
     def _check_connected_device(self):
         raise NotImplementedError('_check_connected_device must be implemented by the derived class.')

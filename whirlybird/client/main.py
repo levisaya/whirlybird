@@ -19,7 +19,7 @@ def main():
     pygame.display.init()
     screen = pygame.display.set_mode((1,1))
 
-    protocol = SocketTransport('127.0.0.1', 8888)
+    protocol = SocketTransport('192.168.1.113', 8888)
 
     controller = Xbox360Controller(protocol)
     clock = pygame.time.Clock()
