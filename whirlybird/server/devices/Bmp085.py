@@ -5,6 +5,8 @@
 
 from .i2c import I2c
 from enum import Enum
+import time
+import math
 
 Bmp085Address = 0x77
 
@@ -49,7 +51,14 @@ class Bmp085(I2c):
 
         self.mode = mode.value
 
-        if use_datasheet_calibrations:
+        self.mode_delay = {Bmp085Mode.ULTRALOWPOWER: 0.05,
+                           Bmp085Mode.STANDARD: 0.08,
+                           Bmp085Mode.HIGHRES: 0.14,
+                           Bmp085Mode.ULTRAHIGHRES: 0.26}[mode]
+
+        self.use_datasheet_calibrations = use_datasheet_calibrations
+
+        if self.use_datasheet_calibrations:
             self.coefficients = {
                 'ac1': 408,
                 'ac2': -72,
@@ -92,21 +101,76 @@ class Bmp085(I2c):
         return x1 + x2
 
     def _read_raw_temp(self):
-        self.write_8(Bmp085Registers.CONTROL.value, Bmp085Commands.READTEMPCMD.value)
+        if self.use_datasheet_calibrations:
+            return 27898
+        else:
+            self.write_8(Bmp085Registers.CONTROL.value, Bmp085Commands.READTEMPCMD.value)
 
-        time.sleep(0.05)
+            time.sleep(0.05)
 
-        return self.read_16(Bmp085Registers.TEMPDATA.value)
+            return self.read_16(Bmp085Registers.TEMPDATA.value)
 
-    def read_temp(self):
+    def get_temperature(self):
         raw_temp = self._read_raw_temp()
         b5 = self.compute_b5(raw_temp)
         return ((b5 + 8) >> 4) / 10
+
+    def _read_raw_pressure(self):
+        if self.use_datasheet_calibrations:
+            return 23843
+        else:
+            self.write_8(Bmp085Registers.CONTROL.value, Bmp085Commands.READPRESSURECMD.value)
+
+            time.sleep(self.mode_delay)
+
+            pressure = (self.read_16(Bmp085Registers.PRESSUREDATA.value) << 8) + \
+                        self.read_byte(Bmp085Registers.PRESSUREDATA.value + 2)
+
+            pressure >>= (8 - self.mode)
+
+            return pressure
+
+    def get_pressure(self):
+        ut = self._read_raw_temp()
+        up = self._read_raw_pressure()
+
+        # Temperature compensation
+        b5 = self.compute_b5(ut)
+
+        # Pressure compensation
+        b6 = b5 - 4000
+        x1 = (self.coefficients['b2'] * ((b6 * b6) >> 12)) >> 11
+        x2 = (self.coefficients['ac2'] * b6) >> 11
+        x3 = x1 + x2
+        b3 = (((self.coefficients['ac1'] * 4 + x3) << self.mode) + 2) >> 2
+        x1 = (self.coefficients['ac3'] * b6) >> 13
+        x2 = (self.coefficients['b1'] * ((b6 * b6) >> 12)) >> 16
+        x3 = ((x1 + x2) + 2) >> 2
+        b4 = (self.coefficients['ac4'] * (x3 + 32768)) >> 15
+        b7 = ((up - b3) * (50000 >> self.mode))
+
+        if b7 < 0x80000000:
+            p = (b7 << 1) // b4
+        else:
+            p = (b7 // b4) << 1
+
+        x1 = (p >> 8) * (p >> 8)
+        x1 = (x1 * 3038) >> 16
+        x2 = (-7357 * p) >> 16
+        return (p + ((x1 + x2 + 3791) >> 4)) / 100
+
+    @staticmethod
+    def pressure_to_altitude(atmospheric, sealevel=1013.25):
+        return 44330.0 * (1.0 - pow(atmospheric / sealevel, 0.1903))
+
+    @staticmethod
+    def sealevel_for_altitude(altitude, atmospheric):
+        return atmospheric / math.pow(1.0 - (altitude/44330.0), 5.255)
 
 if __name__ == '__main__':
     d = Bmp085(use_datasheet_calibrations=False)
     import time
 
     while 1:
-        print(d.read_temp())
+        print(d.pressure_to_altitude(d.get_pressure()))
         time.sleep(1)
