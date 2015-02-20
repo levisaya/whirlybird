@@ -4,7 +4,13 @@ import asyncio
 import time
 from whirlybird.protocols.pilot_input_pb2 import PilotInput
 from threading import Event
-from whirlybird.server.devices.Adafruit_LSM303 import Adafruit_LSM303
+from whirlybird.server.devices.Bmp085 import Bmp085
+from whirlybird.server.devices.lsm303_accelerometer import Lsm303Accelerometer
+from whirlybird.server.devices.lsm303_magnetometer import Lsm303Magnetometer
+from whirlybird.server.devices.l3gd20 import L3gd20
+from aioprocessing import AioPool, AioQueue, AioEvent, AioProcess
+from whirlybird.server.device_polling_process import DevicePollingProcess
+from queue import Empty
 
 
 class PositionController(object):
@@ -13,9 +19,19 @@ class PositionController(object):
 
         self.num_calls = 0
         self.start_time = None
-        self.killed = Event()
+        self.killed = AioEvent()
 
-        self.lsm = Adafruit_LSM303(1)
+        self.sensor_queue = AioQueue()
+
+        self.accelerometer = Lsm303Accelerometer()
+        self.magnetometer = Lsm303Magnetometer()
+        self.gyro = L3gd20()
+        self.baro = Bmp085()
+
+        self.baro_reader = DevicePollingProcess(self.baro.get_pressure, self.sensor_queue, self.killed)
+
+        self.baro_reader_process = AioProcess(target=self.baro_reader.read)
+        self.baro_reader_process.start()
 
         pilot_input_handler = asyncio.start_server(self.handle_pilot_input, '', 8888, loop=self.loop)
         self.loop.run_until_complete(pilot_input_handler)
@@ -42,14 +58,18 @@ class PositionController(object):
 
     @asyncio.coroutine
     def position_update(self):
-        current_time = time.time()
-
         while not self.killed.is_set():
-            yield from asyncio.sleep(1)
-            lsm_data = self.lsm.read()
-            print(lsm_data)
-            # new_time = time.time()
-            # delta = new_time - current_time
-            # if delta > 0.01:
-            #     print('Delta: {}'.format(new_time - current_time))
-            # current_time = new_time
+            accelerometer_data = self.accelerometer.read()
+            magnetometer_data = self.magnetometer.read()
+            gyro_data = self.gyro.read()
+
+            try:
+                baro_data = self.sensor_queue.get_nowait()
+            except Empty:
+                baro_data = None
+
+            print('Accelerometer: {}'.format(accelerometer_data))
+            print('Magentometer: {}'.format(magnetometer_data))
+            print('Gyro: {}'.format(gyro_data))
+            print('Baro: {}'.format(baro_data))
+            time.sleep(0.1)

@@ -51,16 +51,16 @@ class L3gd20Sensitivity(Enum):
 
 
 class L3gd20(I2c):
-    def __init__(self, range):
+    def __init__(self, range_=L3gd20Range.RANGE_250DPS):
         I2c.__init__(self, L3gd20Address)
 
         # Normal mode, all 3 channels enabled.
         self.write_8(L3gd20Registers.CTRL_REG1.value, 0x0F)
 
         # Set the resolution
-        self.write_8(L3gd20Registers.CTRL_REG4.value, range.value << 4)
+        self.write_8(L3gd20Registers.CTRL_REG4.value, range_.value << 4)
 
-        self.sensitivity = L3gd20Sensitivity[range.name].value
+        self.sensitivity = L3gd20Sensitivity[range_.name].value
 
     def _check_connected_device(self):
         whoami = self.read_byte(L3gd20Registers.WHO_AM_I.value)
@@ -73,10 +73,10 @@ class L3gd20(I2c):
     def read(self):
         to_return = {}
 
-        accelerometer_data = self.read_list(L3gd20Registers.OUT_X_L.value | 0x80, 6)
+        gyro_data = self.read_list(L3gd20Registers.OUT_X_L.value | 0x80, 6)
 
         for i, axis in enumerate(['x', 'y', 'z']):
-            val = accelerometer_data[i * 2] | (accelerometer_data[i * 2 + 1] << 8)
+            val = gyro_data[i * 2] | (gyro_data[i * 2 + 1] << 8)
 
             to_return[axis] = val * self.sensitivity
 

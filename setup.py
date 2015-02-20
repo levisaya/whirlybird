@@ -11,7 +11,8 @@ setup(
     license='MIT',
     author='Andy Levisay',
     author_email='levisaya@gmail.com',
-    description='Server to manage and monitor long running processes.',
+    description='',
     install_requires=['python3-protobuf==2.5.0',
-                      'smbus-cffi']
+                      'smbus-cffi',
+                      'aioprocessing']
 )
