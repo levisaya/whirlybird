@@ -7,13 +7,7 @@ from functools import partial
 
 
 class I2c(object):
-    def __init__(self, address):
-        i2c_bus = 1
-        with open('/proc/cpuinfo', 'r') as cpuinfo:
-            for line in cpuinfo:
-                if line.startswith('Revision'):
-                    i2c_bus = 1 if line.rstrip()[-1] in ['2', '3'] else 0
-                    break
+    def __init__(self, address, i2c_bus=1):
         self.bus = smbus.SMBus(i2c_bus)
 
         self.write_8 = partial(self.bus.write_byte_data, *[address])

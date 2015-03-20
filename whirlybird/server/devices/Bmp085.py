@@ -5,7 +5,6 @@
 
 from .i2c import I2c
 from enum import Enum
-import time
 import math
 
 Bmp085Address = 0x77

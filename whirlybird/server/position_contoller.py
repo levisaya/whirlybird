@@ -8,6 +8,7 @@ from whirlybird.server.devices.Bmp085 import Bmp085
 from whirlybird.server.devices.lsm303_accelerometer import Lsm303Accelerometer
 from whirlybird.server.devices.lsm303_magnetometer import Lsm303Magnetometer
 from whirlybird.server.devices.l3gd20 import L3gd20
+from whirlybird.server.devices.adafruit_pwm import AdafruitPwm
 from aioprocessing import AioPool, AioQueue, AioEvent, AioProcess
 from whirlybird.server.device_polling_process import DevicePollingProcess
 from queue import Empty
@@ -27,6 +28,7 @@ class PositionController(object):
         self.magnetometer = Lsm303Magnetometer()
         self.gyro = L3gd20()
         self.baro = Bmp085()
+        self.pwm = AdafruitPwm()
 
         self.baro_reader = DevicePollingProcess(self.baro.get_pressure, self.sensor_queue, self.killed)
 
@@ -59,6 +61,7 @@ class PositionController(object):
     @asyncio.coroutine
     def position_update(self):
         while not self.killed.is_set():
+            start = time.time()
             accelerometer_data = self.accelerometer.read()
             magnetometer_data = self.magnetometer.read()
             gyro_data = self.gyro.read()
@@ -69,7 +72,7 @@ class PositionController(object):
                 baro_data = None
 
             print('Accelerometer: {}'.format(accelerometer_data))
-            print('Magentometer: {}'.format(magnetometer_data))
+            print('Magnetometer: {}'.format(magnetometer_data))
             print('Gyro: {}'.format(gyro_data))
             print('Baro: {}'.format(baro_data))
-            time.sleep(0.1)
+            print('Time: {}'.format(time.time() - start))
