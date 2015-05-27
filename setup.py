@@ -14,5 +14,6 @@ setup(
     description='',
     install_requires=['python3-protobuf==2.5.0',
                       'smbus-cffi',
-                      'aioprocessing']
+                      'aioprocessing',
+                      'RPi.GPIO>=0.5.11']
 )
