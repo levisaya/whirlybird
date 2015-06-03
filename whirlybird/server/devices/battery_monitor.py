@@ -105,17 +105,25 @@ class BatteryMonitor(object):
             return real_voltage
 
 if __name__ == '__main__':
-    vin_max = 5.0
-    vin_min = 2.5
-    r1 = 100000
-    r2 = 300000
-    chip_select_pin = 25
+    import argparse
 
-    monitor = BatteryMonitor(vin_max, vin_min, r1, r2, chip_select_pin)
+    parser = argparse.ArgumentParser(description='Battery monitoring loop')
+    parser.add_argument('--vin-max', dest='vin_max', type=float, help='Maximum input voltage in volts.', required=True)
+    parser.add_argument('--vin-min', dest='vin_min', type=float, help='Minimum input voltage in volts.', required=True)
+    parser.add_argument('--r1', dest='r1', type=int, help='Resistor R1 value in ohms.', required=True)
+    parser.add_argument('--r2', dest='r2', type=int, help='Resistor R2 value in ohms.', required=True)
+    parser.add_argument('--chip-select-pin', dest='chip_select_pin', type=int,
+                        help='Pi chip select pin.', required=True, choices=[25, 26])
+    parser.add_argument('--polling-period', dest='polling_period', type=float,
+                        help='Time between readings, in seconds.', default=2.0)
 
-    print('Vout voltage range: {} to {}'.format(monitor.vout_min, monitor.vout_max))
+    args = parser.parse_args()
 
-    time_between_readings = 2.0
+    monitor = BatteryMonitor(args.vin_max,
+                             args.vin_min,
+                             args.r1,
+                             args.r2,
+                             args.chip_select_pin)
 
     try:
         while True:
@@ -123,7 +131,7 @@ if __name__ == '__main__':
             read_adc = monitor.read_adc()
 
             print(read_adc)
-            time.sleep(time_between_readings)
+            time.sleep(args.polling_period)
 
     except KeyboardInterrupt:
         pass
